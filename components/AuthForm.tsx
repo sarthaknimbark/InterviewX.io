@@ -12,6 +12,9 @@ import { useForm, FormProvider } from "react-hook-form";
 
 import { Button } from "@/components/ui/button"
 import FormField from "@/components/FormField"
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { signUp } from "@/lib/actions/auth.action";
+import { auth } from "@/firebase/admin";
 
  
 const authFormSchema = (type: FormType) => {
@@ -38,13 +41,28 @@ const AuthForm = ({ type }: { type: FormType}) => {
   })
  
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
         if (type === "sign-up") {
+
+           const { name, email, password } = values; 
+           const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+           const result = await signUp({
+                uid: userCredentials.user.uid,
+                name: name!,
+                email,
+                password
+            });
+            if (!result || !result.success) {
+                toast.error(result?.message || "An unknown error occurred.");
+                return;
+            }
+
             toast.success("Account created successfully! Please sign in.");
             router.push("/sign-in");
-            console.log("Creating account with values:", values);
+
         } else if (type === "sign-in") {
+
             toast.success("Signed in successfully!");
             router.push("/");
             console.log("Signing in with values:", values);
