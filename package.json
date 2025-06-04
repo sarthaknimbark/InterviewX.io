@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "quick-push": "git add . && git commit -m \"Code Refactored\" && git push"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
