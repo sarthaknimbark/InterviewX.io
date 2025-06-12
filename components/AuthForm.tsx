@@ -14,7 +14,11 @@ import { Button } from "@/components/ui/button"
 import FormField from "@/components/FormField"
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { signUp } from "@/lib/actions/auth.action";
-import { auth } from "@/firebase/admin";
+// Make sure that "@/firebase/client" exports 'auth' like: export const auth = getAuth(app);
+// If it does not, import the correct export or fix the export in "@/firebase/client".
+import { getAuth } from "firebase/auth";
+import { app } from "@/firebase/client";
+const auth = getAuth(app);
 
  
 const authFormSchema = (type: FormType) => {
