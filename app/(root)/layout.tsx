@@ -3,11 +3,12 @@ import Image from "next/image";
 import { ReactNode } from 'react'
 import { isAuthenticated } from "@/lib/actions/auth.action";
 import { redirect } from 'next/navigation';
+import { Toaster } from "sonner";
 
 const Rootlayout = async ({ children }: { children: ReactNode }) => {
 
-  const isUserAuthenticated = await isAuthenticated();
-  if (!isUserAuthenticated) redirect('sign-in');
+  // const isUserAuthenticated = await isAuthenticated();
+  // if (!isUserAuthenticated) redirect("/sign-in");
 
   return (
     <div className='root-layout'>
@@ -21,6 +22,7 @@ const Rootlayout = async ({ children }: { children: ReactNode }) => {
         </Link>
       </nav>
       {children}
+      <Toaster richColors position="top-center" />
     </div>
   )
 }

@@ -12,7 +12,7 @@ export async function setSessionCookie(idToken: string) {
 
   // Create session cookie
   const sessionCookie = await auth.createSessionCookie(idToken, {
-    expiresIn: SESSION_DURATION * 1000, // milliseconds
+    expiresIn: SESSION_DURATION * 10000, // milliseconds
   });
 
   // Set cookie in the browser
@@ -98,19 +98,21 @@ export async function signOut() {
 
 // Get current user from session cookie
 export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = await cookies();
+  // Correctly use cookies() as an async function
+  const cookieStore = cookies(); // This returns a ReadonlyRequestCookies object (sync), no `await` needed
 
-  const sessionCookie = cookieStore.get("session")?.value;
+  const sessionCookie = (await cookieStore).get("session")?.value;
   if (!sessionCookie) return null;
 
   try {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
 
-    // get user info from db
+    // Fetch user from Firestore
     const userRecord = await db
       .collection("users")
       .doc(decodedClaims.uid)
       .get();
+
     if (!userRecord.exists) return null;
 
     return {
@@ -118,15 +120,23 @@ export async function getCurrentUser(): Promise<User | null> {
       id: userRecord.id,
     } as User;
   } catch (error) {
-    console.log(error);
-
-    // Invalid or expired session
+    console.error("Error verifying session or fetching user:", error);
     return null;
   }
 }
 
 // Check if user is authenticated
 export async function isAuthenticated() {
-  const user = await getCurrentUser();
-  return !!user;
+  const cookieStore = cookies();
+  const sessionCookie = (await cookieStore).get("session")?.value;
+
+  if (!sessionCookie) return false;
+
+  try {
+    await auth.verifySessionCookie(sessionCookie, true);
+    return true;
+  } catch (error) {
+    console.error("Error verifying session cookie:", error);
+    return false;
+  }
 }
