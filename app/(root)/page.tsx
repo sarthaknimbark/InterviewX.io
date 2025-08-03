@@ -40,7 +40,7 @@ const page = () => {
             <p>You haven't taken any interviews yet</p>
           )}
 
-          {/* <p>You haven't taken any interviews yet</p> */}
+          { <p>You haven't taken any interviews yet</p> }
         </div>
       </section>
 
