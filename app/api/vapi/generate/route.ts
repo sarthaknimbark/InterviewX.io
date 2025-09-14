@@ -1,14 +1,18 @@
 import { generateText } from "ai";
+import { google } from "@ai-sdk/google";
+
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
-import {google} from "@ai-sdk/google";
-
-export async function GET() {
-  return Response.json({ success: true, data: "Thank you!" }, { status: 200 });
-}
 
 export async function POST(request: Request) {
-  const { type, role, level, techstack, amount, userid } = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    console.error("Invalid JSON in request body");
+    return Response.json({ success: false, error: "Invalid JSON in request body." }, { status: 400 });
+  }
+  const { type, role, level, techstack, amount, userid } = body;
 
   try {
     const { text: questions } = await generateText({
@@ -18,7 +22,7 @@ export async function POST(request: Request) {
         The job experience level is ${level}.
         The tech stack used in the job is: ${techstack}.
         The focus between behavioural and technical questions should lean towards: ${type}.
-        The amount of questions required is: ${amount}.
+        The amount of questions required is ${amount}.
         Please return only the questions, without any additional text.
         The questions are going to be read by a voice assistant so do not use "/" or "*" or any other special characters which might break the voice assistant.
         Return the questions formatted like this:
@@ -28,12 +32,24 @@ export async function POST(request: Request) {
     `,
     });
 
+    let parsedQuestions;
+    if (!questions || questions.trim().length === 0) {
+      console.error("AI response is empty:", questions);
+      return Response.json({ success: false, error: "AI response is empty." }, { status: 500 });
+    }
+    try {
+      parsedQuestions = JSON.parse(questions);
+    } catch (e) {
+      console.error("Failed to parse questions:", questions);
+      return Response.json({ success: false, error: "Failed to parse questions from AI response." }, { status: 500 });
+    }
+
     const interview = {
       role: role,
       type: type,
       level: level,
       techstack: techstack.split(","),
-      questions: JSON.parse(questions),
+      questions: parsedQuestions,
       userId: userid,
       finalized: true,
       coverImage: getRandomInterviewCover(),
@@ -47,4 +63,8 @@ export async function POST(request: Request) {
     console.error("Error:", error);
     return Response.json({ success: false, error: error }, { status: 500 });
   }
+}
+
+export async function GET() {
+  return Response.json({ success: true, data: "Thank you!" }, { status: 200 });
 }

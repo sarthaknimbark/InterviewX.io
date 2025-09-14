@@ -5,24 +5,35 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 enum CallStatus {
-  INACTIVE = 'INACTIVE',
-  ACTIVE = 'ACTIVE',
-  CONNECTING = 'CONNECTING',
-  DISCONNECTED = 'DISCONNECTED',
+  INACTIVE = "INACTIVE",
+  CONNECTING = "CONNECTING",
+  ACTIVE = "ACTIVE",
+  FINISHED = "FINISHED",
 }
 
+
 interface AgentProps {
-  userName: string
+  userName: string;
+  userId: string;
+  type: string;
 }
 
 const Agent: React.FC<AgentProps> = ({ userName }) => {
-  const callStatus = CallStatus.DISCONNECTED // Replace with real logic
+  const callStatus: CallStatus = CallStatus.INACTIVE; // Replace with real logic
   const isSpeaking = true // Replace with real logic
   const message = [
     'What’s your name?',
     'My name is Sarthak, nice to meet you!',
   ]
   const lastMessage = message[message.length - 1]
+
+  function handleDisconnect(): void {
+    throw new Error('Function not implemented.')
+  }
+
+  function handleCall(): void {
+    throw new Error('Function not implemented.')
+  }
 
   return (
     <>
@@ -61,7 +72,6 @@ const Agent: React.FC<AgentProps> = ({ userName }) => {
         <div className="transcript-border mt-4">
           <div className="transcript">
             <p
-              key={lastMessage}
               className={cn(
                 'transition-opacity duration-500 opacity-0 animate-fadeIn'
               )}
@@ -72,24 +82,24 @@ const Agent: React.FC<AgentProps> = ({ userName }) => {
         </div>
       )}
 
-      <div className="w-full flex justify-center mt-6">
+     <div className="w-full flex justify-center">
         {callStatus !== CallStatus.ACTIVE ? (
-          <button className="relative btn-call px-4 py-2 bg-green-500 text-white rounded-lg">
+          <button className="relative btn-call" onClick={() => handleCall()}>
             <span
               className={cn(
-                'absolute w-full h-full rounded-full bg-green-400 opacity-75 animate-ping',
-                callStatus !== CallStatus.CONNECTING && 'hidden'
+                "absolute animate-ping rounded-full opacity-75",
+                callStatus === CallStatus.CONNECTING ? "" : "hidden"
               )}
             />
-            <span className="relative z-10">
-              {callStatus === CallStatus.INACTIVE ||
-              callStatus === CallStatus.DISCONNECTED
-                ? 'Call'
-                : '...'}
+
+            <span className="relative">
+              {callStatus === CallStatus.INACTIVE
+                ? "Call"
+                : ". . ."}
             </span>
           </button>
         ) : (
-          <button className="btn-disconnect px-4 py-2 bg-red-500 text-white rounded-lg">
+          <button className="btn-disconnect" onClick={() => handleDisconnect()}>
             End
           </button>
         )}
